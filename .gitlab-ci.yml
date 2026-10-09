@@ -14,9 +14,16 @@ pages:
   pages:
     publish: public
 
+     exclude:
+  - backend/node_modules
+  - backend/package-lock.json
+  - backend/package.json
+
   artifacts:
     paths:
       - public
 
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+   
