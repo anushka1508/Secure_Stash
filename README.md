@@ -37,7 +37,11 @@ cd frontend
 npm install
 ```
 
-The frontend currently sends API requests to `http://localhost:5000`.
+The frontend uses `http://localhost:5000` by default. To override it locally, create `frontend/.env.local` with:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
 
 ## Run locally
 
@@ -59,6 +63,34 @@ Open the Vite URL printed in the frontend terminal, normally <http://localhost:5
 
 To create a production frontend bundle, run `npm run build` from `frontend`. The output is written to `frontend/dist`.
 
+## Deploy to Render
+
+Deploy the frontend and backend as separate Render services.
+
+### Backend Web Service
+
+- **Root Directory:** `backend`
+- **Build Command:** `npm install`
+- **Start Command:** `npm start`
+- **Environment variables:**
+  - `MONGO_URI`: MongoDB Atlas connection string. Allow Render to connect in your Atlas network access settings.
+  - `JWT_SECRET`: a newly generated, long random secret.
+  - Do not set `PORT`; Render supplies it.
+
+### Frontend Static Site
+
+- **Root Directory:** `frontend`
+- **Build Command:** `npm install && npm run build`
+- **Publish Directory:** `dist`
+- **Environment variable:**
+  - `VITE_API_URL`: the deployed backend URL, for example `https://your-backend.onrender.com`, with no trailing slash.
+
+Set `VITE_API_URL` before building/redeploying the Static Site; Vite embeds it in the frontend bundle at build time.
+
+Render's local filesystem is ephemeral by default. Uploaded files can be lost when the backend restarts or deploys. Configure persistent storage for `backend/uploads` or use external file storage before relying on uploads in production. Uploaded files are currently served from a public `/uploads` URL.
+
+Before deploying, make sure `backend/.env` is not committed and rotate any credentials or secrets that were previously committed, because removing a file from the current version does not erase it from Git history.
+
 ## Features
 
 - Register and sign in with an email and password
@@ -67,7 +99,7 @@ To create a production frontend bundle, run `npm run build` from `frontend`. The
 - View files shared with the signed-in account
 - Download and delete owned files
 
-Uploaded file contents are stored in `backend/uploads`; file metadata and sharing information are stored in MongoDB.
+Uploaded file contents are stored in `backend/uploads`; file metadata and sharing information are stored in MongoDB. Keep environment files and uploaded content out of Git.
 
 ## API
 
@@ -98,7 +130,7 @@ Uploaded files are served from `/uploads`. In this version, the Express server e
 backend/
   config/        MongoDB connection
   controllers/   Authentication and file operations
-  middleawre/   JWT authentication middleware
+  middleawre/   JWT authentication middleware (folder name in this repository)
   models/        Mongoose User and File models
   routes/        API route definitions
   uploads/       Uploaded file contents (created as needed)
@@ -113,4 +145,4 @@ frontend/
 
 - Keep `backend/.env` private and do not commit real credentials or secrets.
 - The default local MongoDB URI uses port `27017`; update `MONGO_URI` when using a different local port or Atlas.
-- If port `5000` is already occupied, set `PORT` to another available port and update the frontend API URLs to match.
+- If port `5000` is already occupied locally, set `PORT` to another available port and update `VITE_API_URL` in `frontend/.env.local` to match.

@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
 import { AuthContext } from '../AuthContext';
+import api from '../api';
 import Navbar from '../components/Navbar';
 import { Upload, FileText, Image, Video, File, Share2, Trash2, Download } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export default function Dashboard() {
   const fetchFiles = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/files', config);
+      const { data } = await api.get('/api/files', config);
       setFiles(data);
       setFilesError('');
     } catch (error) {
@@ -49,7 +49,7 @@ export default function Dashboard() {
           'Content-Type': 'multipart/form-data',
         },
       };
-      await axios.post('http://localhost:5000/api/files/upload', formData, config);
+      await api.post('/api/files/upload', formData, config);
       setSelectedFile(null);
       fetchFiles();
     } catch (err) {
@@ -60,7 +60,7 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.delete(`http://localhost:5000/api/files/${id}`, config);
+      await api.delete(`/api/files/${id}`, config);
       fetchFiles();
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed');
@@ -70,7 +70,7 @@ export default function Dashboard() {
   const handleShare = async (id) => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post(`http://localhost:5000/api/files/${id}/share`, { email: shareEmail }, config);
+      await api.post(`/api/files/${id}/share`, { email: shareEmail }, config);
       setShareEmail('');
       setActiveShareModal(null);
       alert('File shared successfully!');
@@ -146,7 +146,7 @@ export default function Dashboard() {
 
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
                 <a
-                  href={`http://localhost:5000/${file.path}`}
+                  href={api.getUri({ url: file.path.replace(/\\/g, '/') })}
                   target="_blank"
                   rel="noreferrer"
                   className="p-1.5 text-slate-400 hover:text-white transition"
